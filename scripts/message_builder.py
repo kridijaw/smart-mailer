@@ -5,6 +5,7 @@ from email import encoders
 import mimetypes
 import os
 from markdown import markdown
+from config.settings import ALLOWED_MIME_TYPES
 
 def create_base_message(to_email, subject):
     message = MIMEMultipart('mixed')
@@ -30,8 +31,14 @@ def add_attachments(message, attachments):
         content_type, encoding = mimetypes.guess_type(filepath)
         if content_type is None or encoding is not None:
             content_type = 'application/octet-stream'
-        main_type, sub_type = content_type.split('/', 1)
+            
+        # Check if MIME type is allowed
+        if content_type not in ALLOWED_MIME_TYPES:
+            print(f"Warning: Skipping attachment with unsupported MIME type: {filepath} ({content_type})")
+            continue
 
+        main_type, sub_type = content_type.split('/', 1)
+        
         with open(filepath, 'rb') as attachment:
             part = MIMEBase(main_type, sub_type)
             part.set_payload(attachment.read())
