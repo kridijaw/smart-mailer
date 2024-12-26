@@ -26,8 +26,7 @@ def send_email(to_email, subject, content, attachments=None):
     raw_message = urlsafe_b64encode(message.as_bytes()).decode()
     try:
         sent = service.users().messages().send(userId='me', body={'raw': raw_message}).execute()
-        print(f"Email sent to {to_email} ✓")
         return True
     except Exception as e:
-        print(f"Failed to send email to {to_email}: {e}")
+        print(f"\nFailed to send email to {to_email}: {e}")
         return False

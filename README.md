@@ -85,4 +85,4 @@ The application includes comprehensive error handling for:
 
 ## License
 
-This project is licensed under the MIT License - see the [`LICENSE file`](LICENSE.md) file for details.
+This project is licensed under the MIT License - see the [`LICENSE file`](LICENSE) file for details.

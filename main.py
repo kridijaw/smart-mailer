@@ -1,5 +1,6 @@
 import os
 import argparse
+from tqdm import tqdm
 from scripts.csv_manager import load_recipients
 from scripts.template_manager import render_template
 from scripts.smtp_client import send_email
@@ -26,22 +27,30 @@ def main():
             raise ValueError("No valid recipients found")
 
         # Process and preview/send emails
-        for recipient in recipients:
-            subject, email_content = render_template(template_path, recipient)
-            
-            if args.dry_run:
-                print("\n" + "="*50)
-                print(f"Preview email to: {recipient['email']}")
-                print(f"Subject: {subject}")
-                print("-"*50)
-                print(email_content)
-                print(f"\nAttachments: {[os.path.basename(a) for a in attachments]}")
-                print("="*50)
-            else:
-                send_email(recipient["email"], subject, email_content, attachments)
+        total_sent = 0
+        with tqdm(total=len(recipients), desc="Sending emails") as pbar:
+            for recipient in recipients:
+                subject, email_content = render_template(template_path, recipient)
+                
+                if args.dry_run:
+                    print("\n" + "="*50)
+                    print(f"Preview email to: {recipient['email']}")
+                    print(f"Subject: {subject}")
+                    print("-"*50)
+                    print(email_content)
+                    print(f"\nAttachments: {[os.path.basename(a) for a in attachments]}")
+                    print("="*50)
+                    pbar.update(1)
+                else:
+                    if send_email(recipient["email"], subject, email_content, attachments):
+                        total_sent += 1
+                    pbar.update(1)
+
+        if not args.dry_run:
+            print(f"\nSummary: Successfully sent {total_sent}/{len(recipients)} emails")
 
     except Exception as e:
-        print(f"Error in main: {e}")
+        print(f"\nError in main: {e}")
         raise
 
 if __name__ == "__main__":
