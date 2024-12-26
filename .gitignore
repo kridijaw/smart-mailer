@@ -5,3 +5,6 @@ token.json
 # *.pyc files
 __pycache__/
 *.pyc
+
+# macOS related files
+.DS_Store
