@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from email.mime.multipart import MIMEMultipart
 from scripts.message_builder import create_base_message, create_content_parts, add_attachments
+from config.settings import MAX_ATTACHMENT_SIZE
 
 class TestMessageBuilder(unittest.TestCase):
 
@@ -107,6 +108,21 @@ class TestMessageBuilder(unittest.TestCase):
             self.assertEqual(len(message.get_payload()), 1)
             attachment = message.get_payload()[-1]
             self.assertEqual(attachment.get_filename(), os.path.basename(tmp_file_path))
+        finally:
+            os.remove(tmp_file_path)
+
+    def test_large_attachment(self):
+        message = MIMEMultipart()
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp_file:
+            # Create a file larger than MAX_ATTACHMENT_SIZE
+            large_content = b"0" * (MAX_ATTACHMENT_SIZE + 1024)  # 1KB over limit
+            tmp_file.write(large_content)
+            tmp_file_path = tmp_file.name
+
+        try:
+            add_attachments(message, [tmp_file_path])
+            # Should not attach files larger than MAX_ATTACHMENT_SIZE
+            self.assertEqual(len(message.get_payload()), 0)
         finally:
             os.remove(tmp_file_path)
 

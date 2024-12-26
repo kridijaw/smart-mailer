@@ -3,6 +3,7 @@ import tempfile
 import os
 from unittest.mock import patch, MagicMock
 from scripts.smtp_client import send_email
+from config.settings import MAX_RETRY_ATTEMPTS
 
 class TestSMTPClient(unittest.TestCase):
 
@@ -45,7 +46,7 @@ class TestSMTPClient(unittest.TestCase):
 
         # Assertions
         self.assertFalse(result)
-        mock_send.assert_called_once()
+        self.assertEqual(mock_send.call_count, MAX_RETRY_ATTEMPTS)
 
     @patch('scripts.smtp_client.get_credentials')
     @patch('scripts.smtp_client.build')

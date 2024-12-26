@@ -1,0 +1,3 @@
+MAX_ATTACHMENT_SIZE = 20 * 1024 * 1024  # 20MB
+ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg']
+MAX_RETRY_ATTEMPTS = 5

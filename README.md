@@ -53,6 +53,9 @@ On first run, your browser will open for Google authentication.
 - Email validation
 - Template content sanitization
 - Secure credential storage
+- Attachment handling
+  - Maximum attachment size: 50MB (configurable in `config/settings.py`)
+  - Allowed MIME types: `application/pdf`, `image/jpeg` (configurable in `config/settings.py`)
 
 ## Important Security Notes
 
@@ -73,7 +76,27 @@ The application includes comprehensive error handling for:
 
 - Invalid email addresses
 - Template rendering issues
-- Email sending failures
+- Email sending failures with automatic retries
+  - Configurable retry attempts (default: 5)
+  - Exponential backoff between retries
+  - Detailed failure reporting
+
+## Testing
+
+The application includes comprehensive unit tests to ensure reliability and correctness. The tests cover various aspects of the application, including:
+
+- Email validation
+- Template rendering
+- Attachment handling
+  - MIME type restrictions
+  - File size limits
+- Email sending with retries
+
+To run the tests, use the following command:
+
+```sh
+python -m unittest discover -s test
+```
 
 ## Contributing
 
