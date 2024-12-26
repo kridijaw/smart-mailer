@@ -1,0 +1,7 @@
+# security related files
+credentials.json
+token.json
+
+# *.pyc files
+__pycache__/
+*.pyc

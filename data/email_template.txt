@@ -1,0 +1,9 @@
+---
+subject: Your Email Subject Here
+---
+Hi {{ name }},
+
+Your personalized message here.
+
+Best regards,
+Your Name
