@@ -4,6 +4,7 @@ from tqdm import tqdm
 from scripts.csv_manager import load_recipients
 from scripts.template_manager import render_template
 from scripts.smtp_client import send_email
+from config.settings import MAX_RETRY_ATTEMPTS
 
 def main():
     # Add argument parser
@@ -28,6 +29,8 @@ def main():
 
         # Process and preview/send emails
         total_sent = 0
+        failed_recipients = []
+        
         with tqdm(total=len(recipients), desc="Sending emails") as pbar:
             for recipient in recipients:
                 subject, email_content = render_template(template_path, recipient)
@@ -42,12 +45,19 @@ def main():
                     print("="*50)
                     pbar.update(1)
                 else:
+                    pbar.set_description(f"Sending to {recipient['email']}")
                     if send_email(recipient["email"], subject, email_content, attachments):
                         total_sent += 1
+                    else:
+                        failed_recipients.append(recipient['email'])
                     pbar.update(1)
 
         if not args.dry_run:
             print(f"\nSummary: Successfully sent {total_sent}/{len(recipients)} emails")
+            if failed_recipients:
+                print("\nFailed recipients after {MAX_RETRY_ATTEMPTS} retries:")
+                for email in failed_recipients:
+                    print(f"- {email}")
 
     except Exception as e:
         print(f"\nError in main: {e}")
