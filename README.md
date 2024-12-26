@@ -26,40 +26,23 @@ pip install -r requirements.txt
 
 ## File Structure
 
+- scripts: Core functionality modules
+- [`main.py`](main.py): Main application entry point
 - [`email_template.txt`](data/email_template.txt): Template for your email content using Jinja2 syntax
 - [`recipients.csv`](data/recipients.csv): CSV file containing recipient information (email, name)
-- scripts: Core functionality modules
-- [`config.py`](config.py): OAuth configuration
-- [`main.py`](main.py): Main application entry point
 
 ## Usage
 
-1. Prepare your recipients list in recipients.csv:
-
-```csv
-email,name
-example@email.com,John
-another@email.com,Jane
-```
-
-2. Create your email template in email_template.txt:
-
-```txt
----
-subject: Your Email Subject Here
----
-Hi {{ name }},
-
-Your personalized message here.
-
-Best regards,
-Your Name
-```
-
+1. Prepare your recipients list in [`recipients.csv`](data/recipients.csv)
+2. Create your email template in [`email_template.txt`](data/email_template.txt) using Jinja2 syntax. The template can be in plain text, HTML, or Markdown format.
 3. Run the application:
 
 ```sh
-py
+# Send emails
+python main.py
+
+# Preview emails without sending (dry-run mode)
+python main.py --dry-run
 ```
 
 On first run, your browser will open for Google authentication.
@@ -75,7 +58,7 @@ On first run, your browser will open for Google authentication.
 
 - Keep your credentials.json and token.json files secure
 - Never commit these files to version control
-- Add them to your [.gitignore](.gitignore) file
+- Add them to your .gitignore file
 
 ## Files to protect
 
@@ -102,4 +85,4 @@ The application includes comprehensive error handling for:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [`LICENSE file`](LICENSE.md) file for details.
