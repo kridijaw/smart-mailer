@@ -23,7 +23,7 @@ class TestSMTPClient(unittest.TestCase):
         result = send_email('test@example.com', 'Test Subject', 'Test Content', [])
 
         # Assertions
-        self.assertTrue(result)
+        self.assertTrue(result[0])
         mock_send.assert_called_once()
         args, kwargs = mock_send.call_args
         self.assertEqual(kwargs['userId'], 'me')
@@ -45,7 +45,7 @@ class TestSMTPClient(unittest.TestCase):
         result = send_email('test@example.com', 'Test Subject', 'Test Content', [])
 
         # Assertions
-        self.assertFalse(result)
+        self.assertFalse(result[0])
         self.assertEqual(mock_send.call_count, MAX_RETRY_ATTEMPTS)
 
     @patch('scripts.smtp_client.get_credentials')
@@ -70,7 +70,7 @@ class TestSMTPClient(unittest.TestCase):
             result = send_email('test@example.com', 'Test Subject', 'Test Content', [tmp_file_path])
 
             # Assertions
-            self.assertTrue(result)
+            self.assertTrue(result[0])
             mock_send.assert_called_once()
             args, kwargs = mock_send.call_args
             self.assertEqual(kwargs['userId'], 'me')
