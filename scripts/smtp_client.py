@@ -22,7 +22,7 @@ def send_email(to_email, subject, content, attachments=None):
     msg_alternative.attach(html_part)
 
     # Add attachments
-    add_attachments(message, attachments)
+    successful_attachments = add_attachments(message, attachments)
 
     # Send the email with retries
     raw_message = urlsafe_b64encode(message.as_bytes()).decode()
@@ -30,7 +30,7 @@ def send_email(to_email, subject, content, attachments=None):
     for attempt in range(MAX_RETRY_ATTEMPTS):
         try:
             service.users().messages().send(userId='me', body={'raw': raw_message}).execute()
-            return True
+            return True, successful_attachments
         except Exception as e:
             if attempt < MAX_RETRY_ATTEMPTS - 1:
                 wait_time = (attempt + 1) * 2  # Exponential backoff
@@ -38,4 +38,4 @@ def send_email(to_email, subject, content, attachments=None):
                 time.sleep(wait_time)
             else:
                 print(f"\nFailed to send email to {to_email} after {MAX_RETRY_ATTEMPTS} attempts: {e}")
-                return False
+                return False, successful_attachments

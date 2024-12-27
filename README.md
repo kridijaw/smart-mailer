@@ -55,7 +55,7 @@ On first run, your browser will open for Google authentication.
 - Secure credential storage
 - Attachment handling
   - Maximum attachment size: 50MB (configurable in `config/settings.py`)
-  - Allowed MIME types: `application/pdf`, `image/jpeg` (configurable in `config/settings.py`)
+  - Allowed MIME types: `application/pdf`, `image/*` (configurable in `config/settings.py`)
 
 ## Important Security Notes
 

@@ -21,17 +21,20 @@ def create_content_parts(content):
 
 def add_attachments(message, attachments):
     if not attachments:
-        return
+        return [], []
+
+    successful_attachments = []
+    skipped_attachments = []
 
     for filepath in attachments:
         if not os.path.exists(filepath):
-            print(f"Warning: Attachment not found: {filepath}")
+            skipped_attachments.append((filepath, "Attachment not found"))
             continue
 
         # Check file size
         file_size = os.path.getsize(filepath)
         if file_size > MAX_ATTACHMENT_SIZE:
-            print(f"Warning: Skipping attachment that exceeds size limit ({file_size/1024/1024:.1f}MB > {MAX_ATTACHMENT_SIZE/1024/1024:.1f}MB): {filepath}")
+            skipped_attachments.append((filepath, f"Exceeds size limit ({file_size/1024/1024:.1f}MB > {MAX_ATTACHMENT_SIZE/1024/1024:.1f}MB)"))
             continue
 
         content_type, encoding = mimetypes.guess_type(filepath)
@@ -39,8 +42,8 @@ def add_attachments(message, attachments):
             content_type = 'application/octet-stream'
 
         # Check if MIME type is allowed
-        if content_type not in ALLOWED_MIME_TYPES:
-            print(f"Warning: Skipping attachment with unsupported MIME type: {filepath} ({content_type})")
+        if not any(content_type == allowed or (allowed.endswith('/*') and content_type.startswith(allowed[:-2])) for allowed in ALLOWED_MIME_TYPES):
+            skipped_attachments.append((filepath, f"Unsupported MIME type ({content_type})"))
             continue
 
         main_type, sub_type = content_type.split('/', 1)
@@ -52,3 +55,6 @@ def add_attachments(message, attachments):
             filename = os.path.basename(filepath)
             part.add_header('Content-Disposition', 'attachment', filename=filename)
             message.attach(part)
+            successful_attachments.append(filepath)
+
+    return successful_attachments, skipped_attachments
