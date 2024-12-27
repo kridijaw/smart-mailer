@@ -19,26 +19,26 @@ pip install -r requirements.txt
 
 ## Configuration
 
-1. Create a project in the Google Cloud Console
-2. Enable the Gmail API
+1. Create a project in the [Google Cloud Console](https://console.cloud.google.com)
+2. Enable the [Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com)
 3. Create OAuth 2.0 credentials
-4. Download the credentials and save as credentials.json in the project root
+4. Download the credentials and save it as `credentials.json` in the project root
 
 ## File Structure
 
-- scripts: Core functionality modules
 - `main.py`: Main application entry point
-- `email_template.txt`: Template for your email content using Jinja2 syntax
-- `recipients.csv`: CSV file containing recipient information (email, name)
-- `attachments`: Folder containing files to be attached to emails
+- `scripts`: Folder containing core functionality modules
+- `attachments`: Folder containing files to be attached to all emails
+- `data/email_template.txt`: Template for your email content
+- `data/recipients.csv`: CSV file containing recipient information (email, name)
 - `config/settings.py`: Configuration settings for the application
 
 ## Usage
 
-1. Prepare your recipients list in [`recipients.csv`](data/recipients.csv)
-2. Create your email template in [`email_template.txt`](data/email_template.txt) using Jinja2 syntax. The template can be in plain text, HTML, or Markdown format.
-3. Add attachments to the `attachments` folder (optional)
-4. Adjust the configuration settings in [`config/settings.py`](config/settings.py) as needed
+1. Prepare your recipients list in [`recipients.csv`](data/recipients.csv).
+2. Create your email template in [`email_template.txt`](data/email_template.txt). The template can be in plain text, HTML, or Markdown format. The Jinja2 expression `{{ name }}` will be replaced with the actual name of the email recipient when the template is rendered.
+3. Optional: Add attachments to the `attachments` folder.
+4. Adjust the configuration settings in [`config/settings.py`](config/settings.py) as needed.
 5. Run the application:
 
 ```sh
