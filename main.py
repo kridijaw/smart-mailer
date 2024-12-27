@@ -58,6 +58,10 @@ def main():
                 print("\nFailed recipients after {MAX_RETRY_ATTEMPTS} retries:")
                 for email in failed_recipients:
                     print(f"- {email}")
+            if attachments:
+              print("\nAttachments sent:")
+              for attachment in attachments:
+                  print(f"- {os.path.basename(attachment)}")
 
     except Exception as e:
         print(f"\nError in main: {e}")
