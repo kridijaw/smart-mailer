@@ -27,15 +27,19 @@ pip install -r requirements.txt
 ## File Structure
 
 - scripts: Core functionality modules
-- [`main.py`](main.py): Main application entry point
-- [`email_template.txt`](data/email_template.txt): Template for your email content using Jinja2 syntax
-- [`recipients.csv`](data/recipients.csv): CSV file containing recipient information (email, name)
+- `main.py`: Main application entry point
+- `email_template.txt`: Template for your email content using Jinja2 syntax
+- `recipients.csv`: CSV file containing recipient information (email, name)
+- `attachments`: Folder containing files to be attached to emails
+- `config/settings.py`: Configuration settings for the application
 
 ## Usage
 
 1. Prepare your recipients list in [`recipients.csv`](data/recipients.csv)
 2. Create your email template in [`email_template.txt`](data/email_template.txt) using Jinja2 syntax. The template can be in plain text, HTML, or Markdown format.
-3. Run the application:
+3. Add attachments to the `attachments` folder (optional)
+4. Adjust the configuration settings in [`config/settings.py`](config/settings.py) as needed
+5. Run the application:
 
 ```sh
 # Send emails
