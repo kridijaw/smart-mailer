@@ -3,6 +3,7 @@ import argparse
 from tqdm import tqdm
 from email.mime.multipart import MIMEMultipart
 from scripts.csv_manager import load_recipients
+from scripts.cli import parse_arguments
 from scripts.template_manager import render_template
 from scripts.smtp_client import send_email
 from scripts.message_builder import add_attachments
@@ -11,11 +12,7 @@ from config.logging import logger
 from datetime import datetime
 
 def main():
-    # Add argument parser
-    parser = argparse.ArgumentParser(description='Smart Mailer - Send personalized emails')
-    parser.add_argument('--dry-run', action='store_true', 
-                       help='Preview emails without sending them')
-    args = parser.parse_args()
+    args = parse_arguments()
 
     try:
         logger.info('Starting Smart Mailer application')
