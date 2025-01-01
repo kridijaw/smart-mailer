@@ -60,7 +60,7 @@ def process_recipients(recipients, attachments, template_path):
         subject, email_content = render_template(template_path, recipient)
 
         success, attach_result = send_email(
-            recipient["email"], subject, email_content, attachments)
+            recipient["email"], subject, email_content, index, recipients, attachments)
 
         if success:
             total_sent += 1

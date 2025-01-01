@@ -12,7 +12,7 @@ from scripts.message_builder import (add_attachments, create_base_message,
                                      create_content_parts)
 
 
-def send_email(to_email, subject, content, attachments=None):
+def send_email(to_email, subject, content, index, recipients, attachments=None):
     """Sends an HTML email with a resumable (chunked) upload for large attachments,
     allowing a progress bar to track upload progress.
     """
@@ -45,7 +45,7 @@ def send_email(to_email, subject, content, attachments=None):
     # Show a progress bar for the entire size of the message (including attachments)
     total_size = len(raw_bytes)
     pbar = tqdm(total=total_size, unit='B', unit_scale=True,
-                desc=f"Sending to {to_email}", mininterval=0.1,
+                desc=f"{index}/{len(recipients)} Sending to {to_email}", mininterval=0.1,
                 smoothing=0.1
                 )
 
@@ -71,7 +71,7 @@ def send_email(to_email, subject, content, attachments=None):
                 print(f"\nFailed to send email to {to_email} after {
                       MAX_RETRY_ATTEMPTS} attempts: {e}")
                 pbar.close()
-                return False
+                return False, (successful_attachments)
 
     # Final update to ensure the bar reaches 100%
     if pbar.n < total_size:
@@ -81,9 +81,6 @@ def send_email(to_email, subject, content, attachments=None):
 
     # If the upload is successful, response should contain the message resource ID
     if response is not None and 'id' in response:
-        print(f"Successfully sent email to {to_email}")
-        return True, successful_attachments
+        return True, (successful_attachments)
     else:
-        print(f"Failed to send email to {
-              to_email} (no valid response received).")
-        return False, successful_attachments
+        return False, (successful_attachments)
