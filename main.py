@@ -1,116 +1,164 @@
+import mimetypes
 import os
-import argparse
-from tqdm import tqdm
-from email.mime.multipart import MIMEMultipart
-from scripts.csv_manager import load_recipients
-from scripts.cli import parse_arguments
-from scripts.template_manager import render_template
-from scripts.smtp_client import send_email
-from scripts.message_builder import add_attachments
-from config.settings import MAX_RETRY_ATTEMPTS
-from config.logging import logger
-from datetime import datetime
+import sys
 
-def main():
-    args = parse_arguments()
+from config.logging import logger
+from config.settings import (ALLOWED_MIME_TYPES, IGNORED_EXTENSIONS,
+                             MAX_ATTACHMENT_SIZE, MAX_RETRY_ATTEMPTS,
+                             PREVIEW_EMAIL)
+from scripts.cli import parse_arguments
+from scripts.csv_manager import load_recipients
+from scripts.preview_emails import preview_emails
+from scripts.smtp_client import send_email
+from scripts.template_manager import render_template
+
+
+def load_data():
+    recipients = load_recipients("data/recipients.csv")
+    attachments_folder = "attachments"
+    attachments = [
+        os.path.join(attachments_folder, f)
+        for f in os.listdir(attachments_folder)
+        if os.path.isfile(os.path.join(attachments_folder, f))
+    ]
+    return recipients, attachments
+
+
+def log_and_print(message, level="info"):
+    getattr(logger, level)(message)
+    print(message)
+
+
+def summarize_email_info(total_sent, recipients, failed_recipients,
+                         successful_attachments, skipped_attachments):
+    log_and_print(f"\nSummary: Successfully sent {
+        total_sent}/{len(recipients)} emails")
+    if failed_recipients:
+        log_and_print(f"Failed recipients: {failed_recipients} after {
+                      MAX_RETRY_ATTEMPTS}", "error")
+    if successful_attachments:
+        log_and_print(f"Sent attachments: {
+            [os.path.basename(a) for a in successful_attachments]}")
+    if skipped_attachments:
+        logger.warning(f"Skipped attachments: {
+            [(os.path.basename(a), r) for a, r in skipped_attachments]}")
+        print("\nAttachments that were not sent and reasons:")
+        for attachment, reason in skipped_attachments:
+            print(f"- {os.path.basename(attachment)}: {reason}")
+        print(
+            "\nPlease check the attachments folder or update the config/settings.py accordingly.")
+
+
+def process_recipients(recipients, attachments, template_path):
+    total_sent, failed_recipients, successful_attachments, skipped_attachments = 0, [], set(), set()
+
+    for index, recipient in enumerate(recipients, start=1):
+
+        log_and_print(f"{index}/{len(recipients)} Processing email for {
+            recipient['name']} ({recipient['email']})")
+
+        subject, email_content = render_template(template_path, recipient)
+
+        success, attach_result = send_email(
+            recipient["email"], subject, email_content, attachments)
+
+        if success:
+            total_sent += 1
+            sent_attachments, skipped_attachments, ignored_attachments = attach_result
+            successful_attachments.update(str(a) for a in sent_attachments)
+            log_and_print(f"{index}/{len(recipients)} Successfully sent email to {
+                          recipient['email']}")
+            logger.info(f"{index}/{len(recipients)} Attachments sent to {recipient['email']}: {
+                [os.path.basename(a) for a in sent_attachments]}")
+        else:
+            failed_recipients.append(recipient['email'])
+            log_and_print(f"{index}/{len(recipients)} Failed to send email to {
+                          recipient['email']}", "error")
+
+        if skipped_attachments:
+            log_and_print(f"{index}/{len(recipients)} Skipped attachments for {recipient['email']}: {
+                [os.path.basename(a) for a, _ in skipped_attachments]}", "warning")
+
+        if ignored_attachments:
+            logger.info(f"{index}/{len(recipients)} Ignored attachments for {recipient['email']}: {
+                [os.path.basename(a) for a, _ in ignored_attachments]}")
+
+    summarize_email_info(total_sent, recipients, failed_recipients,
+                         successful_attachments, skipped_attachments)
+    return total_sent, failed_recipients, successful_attachments, skipped_attachments
+
+
+def check_attachments(attachments):
+    if not attachments:
+        return [], []
+
+    skipped_attachments = []
+
+    for attachment in attachments:
+        if not os.path.exists(attachment):
+            skipped_attachments.append((attachment, "Attachment not found"))
+            continue
+
+        attachment_name = os.path.basename(attachment)
+
+        if any(attachment_name.endswith(ext) for ext in IGNORED_EXTENSIONS):
+            skipped_attachments.append((attachment, f"File extension '{
+                                       os.path.splitext(attachment_name)[1]}' is ignored"))
+            continue
+
+        file_size = os.path.getsize(attachment)
+        if file_size > MAX_ATTACHMENT_SIZE:
+            print(f"File '{attachment_name}' cannot be attached: Exceeding size limit ({
+                  file_size/1024/1024:.1f}MB > {MAX_ATTACHMENT_SIZE/1024/1024:.1f}MB)")
+            abort = True
+            break
+
+        content_type, encoding = mimetypes.guess_type(attachment)
+        if content_type is None or encoding is not None:
+            content_type = 'application/octet-stream'
+
+        if not any(content_type == allowed or (allowed.endswith('/*') and content_type.startswith(allowed[:-2])) for allowed in ALLOWED_MIME_TYPES):
+            print(f"File '{
+                  attachment_name}' cannot be attached: Unsupported MIME type ({content_type}).")
+            abort = True
+            break
 
     try:
-        logger.info('Starting Smart Mailer application')
-        logger.info(f'Mode: {"Dry Run" if args.dry_run else "Send"}')
+        if abort:
+            print(
+                "\nPlease delete the file from the attachments folder or update config/settings.py accordingly.")
+            sys.exit("Stopping the application.")
+    except NameError:
+        pass
 
-        # Load data
-        recipients = load_recipients("data/recipients.csv")
+
+def main():
+    try:
+        args = parse_arguments()
+        dry_run = args.dry_run
+        if not (dry_run):
+            logger.info('Starting Smart Mailer application')
         template_path = "data/email_template.txt"
- 
-        # Define attachments folder
-        attachments_folder = "attachments"
-        attachments = [os.path.join(attachments_folder, f) 
-                      for f in os.listdir(attachments_folder) 
-                      if os.path.isfile(os.path.join(attachments_folder, f))]
-        logger.info(f'Loaded {len(recipients)} recipients from CSV')
+
+        recipients, attachments = load_data()
+        check_attachments(attachments)
 
         if not recipients:
             logger.error("No valid recipients found")
             raise ValueError("No valid recipients found")
 
-        # Process and preview/send emails
-        total_sent = 0
-        failed_recipients = []
-        successful_attachments = set()
-        all_skipped_attachments = set()
+        if dry_run or PREVIEW_EMAIL:
+            preview_emails(recipients[0], template_path, attachments)
 
-        with tqdm(total=len(recipients), desc="Sending emails") as pbar:
-            for recipient in recipients:
-                logger.info(f"Processing email for {recipient['name']} ({recipient['email']})")
-                subject, email_content = render_template(template_path, recipient)
-
-                if args.dry_run:
-                    print("\n" + "="*50)
-                    print(f"Preview email to: {recipient['email']}")
-                    print(f"Subject: {subject}")
-                    print("-"*50)
-                    print(email_content)
-                    sent_attachments, skipped = add_attachments(MIMEMultipart(), attachments)
-                    print(f"\nAttachments: {[os.path.basename(a) for a in sent_attachments]}")
-                    successful_attachments.update(sent_attachments)
-                    all_skipped_attachments.update(skipped)
-                    print("="*50)
-                    pbar.update(1)
-                    logger.info(f"Dry run preview for {recipient['email']} completed")
-                else:
-                    pbar.set_description(f"Sending to {recipient['email']}")
-                    success, attach_result = send_email(recipient["email"], subject, email_content, attachments)
-                    if success:
-                        total_sent += 1
-                        sent_attachments, skipped = attach_result
-                        successful_attachments.update(str(a) for a in sent_attachments)
-                        all_skipped_attachments.update(skipped)
-                        logger.info(f"Successfully sent email to {recipient['email']}")
-                        logger.info(f"Attachments sent to {recipient['email']}: {[os.path.basename(a) for a in sent_attachments]}")
-                    else:
-                        failed_recipients.append(recipient['email'])
-                        logger.error(f"Failed to send email to {recipient['email']}")
-
-                    if skipped:
-                        logger.warning(f"Skipped attachments for {recipient['email']}: {[os.path.basename(a) for a, _ in skipped]}")
-
-                pbar.update(1)
-
-        if not args.dry_run:
-            logger.info(f"Email campaign completed - Success rate: {total_sent}/{len(recipients)}")
-            print(f"\nSummary: Successfully sent {total_sent}/{len(recipients)} emails")
-            if failed_recipients:
-                logger.error(f"Failed recipients: {failed_recipients}")
-                print(f"\nFailed recipients after {MAX_RETRY_ATTEMPTS} retries:")
-                for email in failed_recipients:
-                    print(f"- {email}")
-            if successful_attachments:
-                logger.info(f"Successfully sent attachments: {[os.path.basename(a) for a in successful_attachments]}")
-                print("\nAttachments sent:")
-                for attachment in successful_attachments:
-                    print(f"- {os.path.basename(attachment)}")
-            if all_skipped_attachments:
-                logger.warning(f"Skipped attachments: {[(os.path.basename(a), r) for a, r in all_skipped_attachments]}")
-                print("\nAttachments that were not sent and reasons:")
-                for attachment, reason in all_skipped_attachments:
-                    print(f"- {os.path.basename(attachment)}: {reason}")
-                print("\nPlease check the attachments folder or update the config/settings.py accordingly.")
-        else:
-            print(f"\nSummary: Previewed {len(recipients)} emails")
-            if successful_attachments:
-                print("\nAttachments that would be sent:")
-                for attachment in successful_attachments:
-                    print(f"- {os.path.basename(attachment)}")
-            if all_skipped_attachments:
-                print("\nAttachments that would not be sent and reasons:")
-                for attachment, reason in all_skipped_attachments:
-                    print(f"- {os.path.basename(attachment)}: {reason}")
-                print("\nPlease check the attachments folder or update the config/settings.py accordingly.")
+        if not dry_run:
+            process_recipients(
+                recipients, attachments, template_path)
 
     except Exception as e:
         logger.error(f"Critical error in main: {str(e)}", exc_info=True)
         print(f"\nError in main: {e}")
         raise
+
 
 if __name__ == "__main__":
     main()
