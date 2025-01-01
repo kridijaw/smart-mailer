@@ -1,13 +1,21 @@
-from base64 import urlsafe_b64encode
-from googleapiclient.discovery import build
-from scripts.get_credentials import get_credentials
-from email.mime.multipart import MIMEMultipart
-from scripts.message_builder import create_base_message, create_content_parts, add_attachments
-from config.settings import MAX_RETRY_ATTEMPTS
+import io
 import time
+from email.mime.multipart import MIMEMultipart
+
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+from tqdm import tqdm
+
+from config.settings import MAX_RETRY_ATTEMPTS
+from scripts.get_credentials import get_credentials
+from scripts.message_builder import (add_attachments, create_base_message,
+                                     create_content_parts)
+
 
 def send_email(to_email, subject, content, attachments=None):
-    """Sends an HTML email with optional attachments using the Gmail API."""
+    """Sends an HTML email with a resumable (chunked) upload for large attachments,
+    allowing a progress bar to track upload progress.
+    """
     creds = get_credentials()
     service = build('gmail', 'v1', credentials=creds)
 
@@ -24,18 +32,58 @@ def send_email(to_email, subject, content, attachments=None):
     # Add attachments
     successful_attachments = add_attachments(message, attachments)
 
-    # Send the email with retries
-    raw_message = urlsafe_b64encode(message.as_bytes()).decode()
-    
-    for attempt in range(MAX_RETRY_ATTEMPTS):
+    # Prepare the message data for a resumable upload
+    raw_bytes = message.as_bytes()
+    fd = io.BytesIO(raw_bytes)
+    media = MediaIoBaseUpload(
+        fd, mimetype='message/rfc822', chunksize=256*1024, resumable=True)
+
+    # Build the send request (body can remain empty since 'raw' is uploaded via media_body)
+    request = service.users().messages().send(
+        userId='me', media_body=media, body={})
+
+    # Show a progress bar for the entire size of the message (including attachments)
+    total_size = len(raw_bytes)
+    pbar = tqdm(total=total_size, unit='B', unit_scale=True,
+                desc=f"Sending to {to_email}", mininterval=0.1,
+                smoothing=0.1
+                )
+
+    response = None
+    attempt = 0
+
+    # Retry loop (if desired)
+    while attempt < MAX_RETRY_ATTEMPTS and response is None:
         try:
-            service.users().messages().send(userId='me', body={'raw': raw_message}).execute()
-            return True, successful_attachments
+            status, response = request.next_chunk()
+            if status:
+                # Update the progress bar by how many bytes have been uploaded so far
+                pbar.update(status.resumable_progress - pbar.n)
         except Exception as e:
-            if attempt < MAX_RETRY_ATTEMPTS - 1:
-                wait_time = (attempt + 1) * 2  # Exponential backoff
-                print(f"\nRetry {attempt + 1}/{MAX_RETRY_ATTEMPTS} for {to_email} after {wait_time}s: {e}")
+            attempt += 1
+            if attempt < MAX_RETRY_ATTEMPTS:
+                wait_time = (attempt) * 2  # Simple exponential backoff
+                print(f"\nRetry {attempt}/{MAX_RETRY_ATTEMPTS} for {to_email} "
+                      f"after {wait_time}s due to error: {e}")
                 time.sleep(wait_time)
+                continue
             else:
-                print(f"\nFailed to send email to {to_email} after {MAX_RETRY_ATTEMPTS} attempts: {e}")
-                return False, successful_attachments
+                print(f"\nFailed to send email to {to_email} after {
+                      MAX_RETRY_ATTEMPTS} attempts: {e}")
+                pbar.close()
+                return False
+
+    # Final update to ensure the bar reaches 100%
+    if pbar.n < total_size:
+        pbar.update(total_size - pbar.n)
+
+    pbar.close()
+
+    # If the upload is successful, response should contain the message resource ID
+    if response is not None and 'id' in response:
+        print(f"Successfully sent email to {to_email}")
+        return True, successful_attachments
+    else:
+        print(f"Failed to send email to {
+              to_email} (no valid response received).")
+        return False, successful_attachments
