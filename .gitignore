@@ -8,3 +8,10 @@ __pycache__/
 
 # macOS related files
 .DS_Store
+
+# attachments and data
+attachments/
+data/
+
+# logs
+logs/
