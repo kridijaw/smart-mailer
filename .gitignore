@@ -2,6 +2,9 @@
 credentials.json
 token.json
 
+# reference files
+.ref/
+
 # *.pyc files
 __pycache__/
 *.pyc
