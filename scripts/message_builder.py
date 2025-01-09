@@ -11,10 +11,12 @@ from config.settings import (ALLOWED_MIME_TYPES, IGNORED_EXTENSIONS,
                              MAX_ATTACHMENT_SIZE)
 
 
-def create_base_message(to_email, subject):
+def create_base_message(to_email, subject, reply_to=None):
     message = MIMEMultipart('mixed')
     message['to'] = to_email
     message['subject'] = subject
+    if reply_to:
+        message['reply-to'] = reply_to
     return message
 
 

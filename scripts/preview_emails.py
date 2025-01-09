@@ -5,15 +5,17 @@ from scripts.message_builder import add_attachments
 
 
 def preview_emails(recipient, template_path, attachments):
-    subject, email_content = render_template(template_path, recipient)
-
-    print("\n" + "="*50)
-    print(f"Preview email to: {recipient['email']}")
+    subject, email_content, reply_to = render_template(
+        template_path, recipient)
+    print("\n" + "="*21 + "PREVIEW" + "="*21)
     print(f"Subject: {subject}")
-    print("-"*50)
+    print(f"To: {recipient['email']}")
+    if (reply_to):
+        print(f"Reply-To: {reply_to}")
+    print("-"*49)
     print(email_content)
     sent_attachments = add_attachments(
         MIMEMultipart(), attachments)
     print(f"\nAttachments: {[os.path.basename(a)
           for a in sent_attachments]}")
-    print("="*50)
+    print("="*49)

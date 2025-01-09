@@ -12,7 +12,7 @@ from scripts.message_builder import (add_attachments, create_base_message,
                                      create_content_parts)
 
 
-def send_email(index, recipient, email_subject, email_content, attachments=None):
+def send_email(index, recipient, email_subject, email_content, attachments=None, reply_to=None):
     """Sends an HTML email with a resumable (chunked) upload for large attachments,
     allowing a progress bar to track upload progress.
     """
@@ -22,7 +22,7 @@ def send_email(index, recipient, email_subject, email_content, attachments=None)
     email_to = recipient["email"]
 
     # Build the message
-    message = create_base_message(email_to, email_subject)
+    message = create_base_message(email_to, email_subject, reply_to)
     msg_alternative = MIMEMultipart('alternative')
     message.attach(msg_alternative)
 

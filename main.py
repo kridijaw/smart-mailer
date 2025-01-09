@@ -30,11 +30,11 @@ def main():
             total_sent = 0
 
             for index, recipient in enumerate(recipients, start=1):
-                email_subject, email_content = render_template(
+                email_subject, email_content, reply_to = render_template(
                     template_path, recipient)
 
                 success, sent_attachments = send_email(
-                    index, recipient, email_subject, email_content, attachments)
+                    index, recipient, email_subject, email_content, attachments, reply_to)
 
                 if success:
                     total_sent += 1

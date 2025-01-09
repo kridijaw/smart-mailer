@@ -8,4 +8,4 @@ def render_template(template_path, context):
     # Sanitize context values
     safe_context = {k: escape(v) for k, v in context.items()}
     template = Template(template_content)
-    return metadata.get('subject'), template.render(safe_context)
+    return metadata.get('subject'), template.render(safe_context), metadata.get('reply-to')
