@@ -2,32 +2,36 @@ import mimetypes
 import os
 import sys
 
+from config.logging import logger
 from config.settings import (ALLOWED_MIME_TYPES, IGNORED_EXTENSIONS,
                              MAX_ATTACHMENT_SIZE)
+from scripts.utils import log_and_print
 
 
-def check_attachments(attachments):
+def validate_attachments(attachments):
     if not attachments:
         return [], []
 
-    skipped_attachments = []
+    valid_attachments = []
 
     for attachment in attachments:
         if not os.path.exists(attachment):
-            skipped_attachments.append((attachment, "Attachment not found"))
+            log_and_print(f"Attachment not found: {attachment}", "error")
             continue
 
         attachment_name = os.path.basename(attachment)
 
         if any(attachment_name.endswith(ext) for ext in IGNORED_EXTENSIONS):
-            skipped_attachments.append((attachment, f"File extension '{
-                                       os.path.splitext(attachment_name)[1]}' is ignored"))
+            file_ext = os.path.splitext(attachment_name)[1] if os.path.splitext(
+                attachment_name)[1] else os.path.splitext(attachment_name)[0]
+            logger.info(f"{attachment} is ignored: File extension '{
+                        file_ext}' is on ignore list")
             continue
 
         file_size = os.path.getsize(attachment)
         if file_size > MAX_ATTACHMENT_SIZE:
-            print(f"File '{attachment_name}' cannot be attached: Exceeding size limit ({
-                  file_size/1024/1024:.1f}MB > {MAX_ATTACHMENT_SIZE/1024/1024:.1f}MB)")
+            log_and_print(f"File '{attachment_name}' cannot be attached: Exceeding size limit ({
+                file_size/1024/1024:.1f}MB > {MAX_ATTACHMENT_SIZE/1024/1024:.1f}MB)", "warning")
             abort = True
             break
 
@@ -36,15 +40,18 @@ def check_attachments(attachments):
             content_type = 'application/octet-stream'
 
         if not any(content_type == allowed or (allowed.endswith('/*') and content_type.startswith(allowed[:-2])) for allowed in ALLOWED_MIME_TYPES):
-            print(f"File '{
-                  attachment_name}' cannot be attached: Unsupported MIME type ({content_type}).")
+            log_and_print(f"File '{
+                attachment_name}' cannot be attached: Unsupported MIME type ({content_type}).", "warning")
             abort = True
             break
 
+        valid_attachments.append(attachment)
+
     try:
         if abort:
-            print(
+            sys.exit(
                 "\nPlease delete the file from the attachments folder or update config/settings.py accordingly.")
-            sys.exit("Stopping the application.")
     except NameError:
         pass
+
+    return valid_attachments
