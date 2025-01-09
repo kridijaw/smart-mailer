@@ -12,7 +12,7 @@ def preview_emails(recipient, template_path, attachments):
     print(f"Subject: {subject}")
     print("-"*50)
     print(email_content)
-    sent_attachments, skipped_attachments, ignored_attachments = add_attachments(
+    sent_attachments = add_attachments(
         MIMEMultipart(), attachments)
     print(f"\nAttachments: {[os.path.basename(a)
           for a in sent_attachments]}")
