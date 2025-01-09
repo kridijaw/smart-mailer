@@ -36,7 +36,7 @@ pip install -r requirements.txt
 ## Usage
 
 1. Prepare your recipients list in [`recipients.csv`](data/recipients.csv).
-2. Create your email template in [`email_template.txt`](data/email_template.txt). The template can be in plain text, HTML, or Markdown format. The Jinja2 expression `{{ name }}` will be replaced with the actual name of the email recipient when the template is rendered.
+2. Create your email template in [`email_template.txt`](data/email_template.txt). The template can be in plain text, HTML, or Markdown format. The Jinja2 expression `{{ name }}` will be replaced with the name of the email recipient defined in recipients.csv when the template is rendered.
 3. Optional: Add attachments to the `attachments` folder.
 4. Adjust the configuration settings in [`config/settings.py`](config/settings.py) as needed.
 5. Run the application:
@@ -51,50 +51,62 @@ python main.py --dry-run
 
 On first run, your browser will open for Google authentication.
 
-## Security Features
-
-- OAuth 2.0 authentication with Gmail API
-- Email validation
-- Template content sanitization
-- Secure credential storage
-- Attachment handling
-  - Maximum attachment size: 50MB (configurable in `config/settings.py`)
-  - Allowed MIME types: `application/pdf`, `image/*` (configurable in `config/settings.py`)
-
 ## Important Security Notes
 
 - Keep your credentials.json and token.json files secure
 - Never commit these files to version control
 - Add them to your .gitignore file
 
-## Files to protect
+## Features
 
-The following files contain sensitive information and should not be shared:
+### Core Features
 
-- credentials.json
-- token.json
+- Personalized email sending using Gmail API
+- OAuth 2.0 authentication for secure access
+- Template-based emails with Jinja2 support
+- CSV-based recipient management
+- Bulk attachment handling
+- Dry-run mode for email preview
+- Attachment handling:
+  - Maximum attachment size: 50MB (configurable in `config/settings.py`)
+  - Allowed MIME types: `application/pdf`, `image/*` (configurable in `config/settings.py`)
 
-## Error Handling
+### Template System
 
-The application includes comprehensive error handling for:
+- Support for plain text, HTML, and Markdown formats
+- Variable interpolation using Jinja2
+- Personalization using recipient data
+- Template validation and preview
 
-- Invalid email addresses
-- Template rendering issues
-- Email sending failures with automatic retries
-  - Configurable retry attempts (default: 5)
-  - Exponential backoff between retries
-  - Detailed failure reporting
+### Email Scheduling
 
-## Testing
+- Configurable send time windows
+- Automatic schedule adherence
+- CLI options for custom scheduling
+- Schedule override capabilities
 
-The application includes comprehensive unit tests to ensure reliability and correctness. The tests cover various aspects of the application, including:
+### Security
 
+- OAuth 2.0 authentication with Gmail API
 - Email validation
-- Template rendering
-- Attachment handling
-  - MIME type restrictions
-  - File size limits
-- Email sending with retries
+- Template content sanitization
+- Secure credential storage
+
+### Error Handling
+
+- Automatic retry mechanism
+- Configurable retry attempts
+- Exponential backoff
+- Detailed error reporting
+- Graceful failure handling
+
+### Testing
+
+- Comprehensive unit test suite
+- Template rendering tests
+- Attachment validation tests
+- Email sending tests
+- Mock email preview
 
 To run the tests, use the following command:
 
