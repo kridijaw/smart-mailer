@@ -1,10 +1,11 @@
 from config.logging import logger
 from config.settings import PREVIEW_EMAIL
-from scripts.attachment_utils import check_attachments
+from scripts.attachment_utils import validate_attachments
 from scripts.cli import parse_arguments
-from scripts.email_processor import process_recipients
 from scripts.preview_emails import preview_emails
-from scripts.utils import load_data
+from scripts.smtp_client import send_email
+from scripts.template_manager import render_template
+from scripts.utils import load_data, log_email_summary, log_success
 
 
 def main():
@@ -16,7 +17,7 @@ def main():
         template_path = "data/email_template.txt"
 
         recipients, attachments = load_data()
-        check_attachments(attachments)
+        attachments = validate_attachments(attachments)
 
         if not recipients:
             logger.error("No valid recipients found")
@@ -26,8 +27,22 @@ def main():
             preview_emails(recipients[0], template_path, attachments)
 
         if not dry_run:
-            process_recipients(
-                recipients, attachments, template_path)
+            total_sent = 0
+
+            for index, recipient in enumerate(recipients, start=1):
+                email_subject, email_content = render_template(
+                    template_path, recipient)
+
+                success, sent_attachments = send_email(
+                    index, recipient, email_subject, email_content, attachments)
+
+                if success:
+                    total_sent += 1
+
+                log_success(index, recipient, len(
+                    recipients), sent_attachments, success)
+
+            log_email_summary(total_sent, len(recipients))
 
     except Exception as e:
         logger.error(f"Critical error in main: {str(e)}", exc_info=True)

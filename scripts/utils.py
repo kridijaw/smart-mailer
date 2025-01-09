@@ -25,7 +25,7 @@ def log_email_summary(total_sent, len_recipients):
 
 
 def log_success(index, recipient, len_recipients, sent_attachments, success):
-    failed_recipients, successful_attachments, skipped_attachments = [], set(), set()
+    failed_recipients, successful_attachments, = [], set()
 
     if success:
         successful_attachments.update(str(a) for a in sent_attachments)
