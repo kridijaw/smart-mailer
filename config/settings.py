@@ -1,6 +1,13 @@
+from datetime import time
+
+EMAIL_PREVIEW_ENABLED = True
+MAX_RETRY_ATTEMPTS = 5
+
 MAX_ATTACHMENT_SIZE = 60 * 1024 * 1024  # 60MB
-PREVIEW_EMAIL = True
 ALLOWED_MIME_TYPES = ['application/pdf',
                       'image/*', 'video/*', 'audio/*', 'text/*']
 IGNORED_EXTENSIONS = ['.DS_Store']
-MAX_RETRY_ATTEMPTS = 5
+
+SCHEDULING_ENABLED = True
+SEND_TIME_START = time(0, 0)  # 24-hour HH:MM format
+SEND_TIME_END = time(23, 59)

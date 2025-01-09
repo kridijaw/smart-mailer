@@ -1,8 +1,9 @@
 from config.logging import logger
-from config.settings import PREVIEW_EMAIL
+from config.settings import EMAIL_PREVIEW_ENABLED
 from scripts.attachment_utils import validate_attachments
 from scripts.cli import parse_arguments
 from scripts.preview_emails import preview_emails
+from scripts.scheduler import wait_for_send_window
 from scripts.smtp_client import send_email
 from scripts.template_manager import render_template
 from scripts.utils import load_data, log_email_summary, log_success
@@ -23,13 +24,15 @@ def main():
             logger.error("No valid recipients found")
             raise ValueError("No valid recipients found")
 
-        if dry_run or PREVIEW_EMAIL:
+        if dry_run or EMAIL_PREVIEW_ENABLED:
             preview_emails(recipients[0], template_path, attachments)
 
         if not dry_run:
             total_sent = 0
 
             for index, recipient in enumerate(recipients, start=1):
+                wait_for_send_window()
+
                 email_subject, email_content, reply_to = render_template(
                     template_path, recipient)
 
