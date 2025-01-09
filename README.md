@@ -47,6 +47,9 @@ If you encounter a JSONDecodeError in get_credentials.py, remove the `token.json
 # Send emails
 python main.py
 
+# Send emails between a specific time window
+python main.py --start-time 10:00 --end-time 15:00
+
 # Preview emails without sending (dry-run mode)
 python main.py --dry-run
 ```
@@ -58,49 +61,6 @@ On first run, your browser will open for Google authentication.
 - Keep your credentials.json and token.json files secure
 - Never commit these files to version control
 - Add them to your .gitignore file
-
-## Features
-
-### Core Features
-
-- Personalized email sending using Gmail API
-- OAuth 2.0 authentication for secure access
-- Template-based emails with Jinja2 support
-- CSV-based recipient management
-- Bulk attachment handling
-- Dry-run mode for email preview
-- Attachment handling:
-  - Maximum attachment size: 50MB (configurable in `config/settings.py`)
-  - Allowed MIME types: `application/pdf`, `image/*` (configurable in `config/settings.py`)
-
-### Template System
-
-- Support for plain text, HTML, and Markdown formats
-- Variable interpolation using Jinja2
-- Personalization using recipient data
-- Template validation and preview
-
-### Email Scheduling
-
-- Configurable send time windows
-- Automatic schedule adherence
-- CLI options for custom scheduling
-- Schedule override capabilities
-
-### Security
-
-- OAuth 2.0 authentication with Gmail API
-- Email validation
-- Template content sanitization
-- Secure credential storage
-
-### Error Handling
-
-- Automatic retry mechanism
-- Configurable retry attempts
-- Exponential backoff
-- Detailed error reporting
-- Graceful failure handling
 
 ## Contributing
 
