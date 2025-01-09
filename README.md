@@ -100,20 +100,6 @@ On first run, your browser will open for Google authentication.
 - Detailed error reporting
 - Graceful failure handling
 
-### Testing
-
-- Comprehensive unit test suite
-- Template rendering tests
-- Attachment validation tests
-- Email sending tests
-- Mock email preview
-
-To run the tests, use the following command:
-
-```sh
-python -m unittest discover -s test
-```
-
 ## Contributing
 
 1. Fork the repository
