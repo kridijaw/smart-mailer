@@ -6,7 +6,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from tqdm import tqdm
 
-from config.settings import MAX_RETRY_ATTEMPTS
+from config.settings import EMAIL_MAX_RETRY_ATTEMPTS
 from scripts.get_credentials import get_credentials
 from scripts.message_builder import (add_attachments, create_base_message,
                                      create_content_parts)
@@ -54,7 +54,7 @@ def send_email(index, recipient, email_subject, email_content, attachments=None,
     response = None
     attempt = 0
 
-    while attempt < MAX_RETRY_ATTEMPTS and response is None:
+    while attempt < EMAIL_MAX_RETRY_ATTEMPTS and response is None:
         try:
             status, response = request.next_chunk()
             if status:
@@ -62,15 +62,15 @@ def send_email(index, recipient, email_subject, email_content, attachments=None,
                 pbar.update(status.resumable_progress - pbar.n)
         except Exception as e:
             attempt += 1
-            if attempt < MAX_RETRY_ATTEMPTS:
+            if attempt < EMAIL_MAX_RETRY_ATTEMPTS:
                 wait_time = (attempt) * 2  # Simple exponential backoff
-                print(f"\nRetry {attempt}/{MAX_RETRY_ATTEMPTS} for {email_to} "
+                print(f"\nRetry {attempt}/{EMAIL_MAX_RETRY_ATTEMPTS} for {email_to} "
                       f"after {wait_time}s due to error: {e}")
                 time.sleep(wait_time)
                 continue
             else:
                 print(f"\nFailed to send email to {email_to} after {
-                      MAX_RETRY_ATTEMPTS} attempts: {e}")
+                      EMAIL_MAX_RETRY_ATTEMPTS} attempts: {e}")
                 pbar.close()
                 return False, (sent_attachments)
 

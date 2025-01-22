@@ -1,6 +1,6 @@
-from datetime import datetime, time
+from datetime import datetime
 import time as time_module
-from config.settings import SCHEDULING_ENABLED, SEND_TIME_START, SEND_TIME_END
+from config.settings import EMAIL_SCHEDULING_ENABLED, SEND_TIME_START, SEND_TIME_END
 from config.logging import logger
 
 # Add these color codes at the top
@@ -22,7 +22,7 @@ def get_next_send_time():
 
 def is_within_send_window():
     """Check if current time is within allowed sending window"""
-    if not SCHEDULING_ENABLED:
+    if not EMAIL_SCHEDULING_ENABLED:
         return True
 
     current_time = datetime.now().time()

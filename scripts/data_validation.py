@@ -4,20 +4,18 @@ import re
 import sys
 
 from config.logging import logger
-from config.settings import (ALLOWED_MIME_TYPES, IGNORED_EXTENSIONS,
-                             MAX_ATTACHMENT_SIZE)
+from config.settings import (ATTACHMENT_ALLOWED_MIME_TYPES, ATTACHMENT_IGNORED_EXTENSIONS,
+                             ATTACHMENT_MAX_SIZE, PATTERN_EMAIL, PATTERN_NAME)
 from scripts.utils import log_and_print
 
 
 def validate_recipients(recipients):
-    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-ZğüşöçİĞÜŞÖÇ]{2,}$'
-    name_pattern = r'^[a-zA-ZğüşöçİĞÜŞÖÇ\s]{2,}$'
     email_to_names = {}
 
     for recipient in recipients:
-        if not validate_pattern(recipient['name'], name_pattern):
+        if not validate_pattern(recipient['name'], PATTERN_NAME):
             raise ValueError(f"Invalid name: {recipient['name']}")
-        if not validate_pattern(recipient['email'], email_pattern):
+        if not validate_pattern(recipient['email'], PATTERN_EMAIL):
             raise ValueError(f"Invalid name: {recipient['name']}")
         if not check_email_name_conflicts(recipient, email_to_names):
             raise ValueError(f"Found email duplicates under different names: {recipient['email']} - {
@@ -55,7 +53,7 @@ def validate_attachments(attachments):
 
         attachment_name = os.path.basename(attachment)
 
-        if any(attachment_name.endswith(ext) for ext in IGNORED_EXTENSIONS):
+        if any(attachment_name.endswith(ext) for ext in ATTACHMENT_IGNORED_EXTENSIONS):
             file_ext = os.path.splitext(attachment_name)[1] if os.path.splitext(
                 attachment_name)[1] else os.path.splitext(attachment_name)[0]
             logger.info(f"{attachment} is ignored: File extension '{
@@ -63,9 +61,9 @@ def validate_attachments(attachments):
             continue
 
         file_size = os.path.getsize(attachment)
-        if file_size > MAX_ATTACHMENT_SIZE:
+        if file_size > ATTACHMENT_MAX_SIZE:
             log_and_print(f"File '{attachment_name}' cannot be attached: Exceeding size limit ({
-                file_size/1024/1024:.1f}MB > {MAX_ATTACHMENT_SIZE/1024/1024:.1f}MB)", "warning")
+                file_size/1024/1024:.1f}MB > {ATTACHMENT_MAX_SIZE/1024/1024:.1f}MB)", "warning")
             abort = True
             break
 
@@ -73,7 +71,7 @@ def validate_attachments(attachments):
         if content_type is None or encoding is not None:
             content_type = 'application/octet-stream'
 
-        if not any(content_type == allowed or (allowed.endswith('/*') and content_type.startswith(allowed[:-2])) for allowed in ALLOWED_MIME_TYPES):
+        if not any(content_type == allowed or (allowed.endswith('/*') and content_type.startswith(allowed[:-2])) for allowed in ATTACHMENT_ALLOWED_MIME_TYPES):
             log_and_print(f"File '{
                 attachment_name}' cannot be attached: Unsupported MIME type ({content_type}).", "warning")
             abort = True

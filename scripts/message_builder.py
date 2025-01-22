@@ -7,8 +7,8 @@ from email.mime.text import MIMEText
 
 from markdown import markdown
 
-from config.settings import (ALLOWED_MIME_TYPES, IGNORED_EXTENSIONS,
-                             MAX_ATTACHMENT_SIZE)
+from config.settings import (ATTACHMENT_ALLOWED_MIME_TYPES, ATTACHMENT_IGNORED_EXTENSIONS,
+                             ATTACHMENT_MAX_SIZE)
 
 
 def create_base_message(to_email, subject, reply_to=None):
@@ -39,11 +39,11 @@ def add_attachments(message, attachments):
 
         attachment_name = os.path.basename(filepath)
 
-        if any(attachment_name.endswith(ext) for ext in IGNORED_EXTENSIONS):
+        if any(attachment_name.endswith(ext) for ext in ATTACHMENT_IGNORED_EXTENSIONS):
             continue
 
         file_size = os.path.getsize(filepath)
-        if file_size > MAX_ATTACHMENT_SIZE:
+        if file_size > ATTACHMENT_MAX_SIZE:
             continue
 
         content_type, encoding = mimetypes.guess_type(filepath)
@@ -53,7 +53,7 @@ def add_attachments(message, attachments):
         if not any(
             content_type == allowed or (allowed.endswith(
                 '/*') and content_type.startswith(allowed[:-2]))
-            for allowed in ALLOWED_MIME_TYPES
+            for allowed in ATTACHMENT_ALLOWED_MIME_TYPES
         ):
             continue
 
