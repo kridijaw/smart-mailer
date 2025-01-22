@@ -1,3 +1,5 @@
 email,name
 example@email.com,John
 another@email.com,Jane
+# lines starting with # are ignored
+# ignored@email.com,ignored
