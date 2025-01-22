@@ -11,33 +11,37 @@ from scripts.utils import log_email_summary
 def main():
     try:
         args = parse_arguments()
-        dry_run = args.dry_run
-        if dry_run:
-            logger.info('Running in dry-run mode')
-        if not (dry_run):
-            logger.info('Starting Smart Mailer application')
+        dry_run = setup_config(args)
         template_path = "data/email_template.txt"
 
+        # Load and validate data
         recipients, attachments = load_data()
-        recipients, attachments = validate_recipients(
-            recipients), validate_attachments(attachments)
+        recipients = validate_recipients(recipients)
+        attachments = validate_attachments(attachments)
 
-        if not recipients:
-            logger.error("No valid recipients found")
-            raise ValueError("No valid recipients found")
-
+        # Preview mode
         if dry_run or EMAIL_PREVIEW_ENABLED:
             preview_emails(recipients[0], template_path, attachments)
+            if dry_run:
+                log_email_summary(0, len(recipients), dry_run)
+                return
 
-        if not dry_run:
-            process_email(recipients, template_path, attachments, args)
-        if dry_run:
-            log_email_summary(0, len(recipients), dry_run)
+        # Process emails
+        process_email(recipients, template_path, attachments, args)
 
     except Exception as e:
         logger.error(f"Critical error in main: {str(e)}", exc_info=True)
         print(f"\nError in main: {e}")
         raise
+
+
+def setup_config(args):
+    """Initialize configuration settings"""
+    if args.dry_run:
+        logger.info('Running in dry-run mode')
+    else:
+        logger.info('Starting Smart Mailer application')
+    return args.dry_run
 
 
 if __name__ == "__main__":

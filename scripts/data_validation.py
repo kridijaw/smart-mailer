@@ -10,6 +10,10 @@ from scripts.utils import log_and_print
 
 
 def validate_recipients(recipients):
+    if not recipients:
+        logger.error("No valid recipients found")
+        raise ValueError("No valid recipients found")
+
     email_to_names = {}
 
     for recipient in recipients:
