@@ -16,12 +16,12 @@ def process_email(recipients, template_path, attachments, args):
                 template_path, recipient)
 
             success, sent_attachments = send_email(
-                index, recipient, email_subject, email_content, attachments, reply_to)
+                index, recipient, recipients, email_subject, email_content, attachments, reply_to)
 
             if success:
                 total_sent += 1
 
-            log_success(index, recipient, len(
-                recipients), sent_attachments, success, attachments)
+            log_success(index, recipient, recipients,
+                        sent_attachments, success, attachments)
 
         log_email_summary(total_sent, len(recipients), args.dry_run)

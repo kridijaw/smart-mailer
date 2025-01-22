@@ -12,7 +12,7 @@ from scripts.message_builder import (add_attachments, create_base_message,
                                      create_content_parts)
 
 
-def send_email(index, recipient, email_subject, email_content, attachments=None, reply_to=None):
+def send_email(index, recipient, recipients, email_subject, email_content, attachments=None, reply_to=None):
     """Sends an HTML email with a resumable (chunked) upload for large attachments,
     allowing a progress bar to track upload progress.
     """
@@ -47,7 +47,7 @@ def send_email(index, recipient, email_subject, email_content, attachments=None,
     # Show a progress bar for the entire size of the message (including attachments)
     total_size = len(raw_bytes)
     pbar = tqdm(total=total_size, unit='B', unit_scale=True,
-                desc=f"{index}/{len(recipient)} Sending to {email_to}", mininterval=0.1,
+                desc=f"{index}/{len(recipients)} Sending to {email_to}", mininterval=0.1,
                 smoothing=0.1
                 )
 
