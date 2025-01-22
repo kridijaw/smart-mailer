@@ -1,24 +1,28 @@
 from config.logging import logger
 from config.settings import EMAIL_PREVIEW_ENABLED
-from scripts.attachment_utils import validate_attachments
 from scripts.cli import parse_arguments
+from scripts.data_loader import load_data
+from scripts.data_validation import validate_attachments, validate_recipients
 from scripts.preview_emails import preview_emails
 from scripts.scheduler import wait_for_send_window
 from scripts.smtp_client import send_email
 from scripts.template_manager import render_template
-from scripts.utils import load_data, log_email_summary, log_success
+from scripts.utils import log_email_summary, log_success
 
 
 def main():
     try:
         args = parse_arguments()
         dry_run = args.dry_run
+        if dry_run:
+            logger.info('Running in dry-run mode')
         if not (dry_run):
             logger.info('Starting Smart Mailer application')
         template_path = "data/email_template.txt"
 
         recipients, attachments = load_data()
-        attachments = validate_attachments(attachments)
+        recipients, attachments = validate_recipients(
+            recipients), validate_attachments(attachments)
 
         if not recipients:
             logger.error("No valid recipients found")
@@ -45,7 +49,10 @@ def main():
                 log_success(index, recipient, len(
                     recipients), sent_attachments, success, attachments)
 
-            log_email_summary(total_sent, len(recipients))
+            log_email_summary(total_sent, len(recipients), dry_run)
+
+        if dry_run:
+            log_email_summary(0, len(recipients), dry_run)
 
     except Exception as e:
         logger.error(f"Critical error in main: {str(e)}", exc_info=True)

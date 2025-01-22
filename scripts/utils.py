@@ -1,7 +1,6 @@
 import os
 
 from config.logging import logger
-from scripts.csv_manager import load_recipients
 
 
 def log_and_print(message, level="info"):
@@ -9,19 +8,13 @@ def log_and_print(message, level="info"):
     print(message)
 
 
-def load_data():
-    recipients = load_recipients("data/recipients.csv")
-    attachments_folder = "attachments"
-    attachments = [
-        os.path.join(attachments_folder, f)
-        for f in os.listdir(attachments_folder)
-        if os.path.isfile(os.path.join(attachments_folder, f))
-    ]
-    return recipients, attachments
-
-
-def log_email_summary(total_sent, len_recipients):
-    log_and_print(f"Successfully sent {total_sent}/{len_recipients} emails")
+def log_email_summary(total_sent, len_recipients, dry_run=False):
+    if dry_run:
+        log_and_print(
+            f"Dry run succeeded. No emails were sent.")
+    if not dry_run:
+        log_and_print(f"Successfully sent {
+                      total_sent}/{len_recipients} emails")
 
 
 def log_success(index, recipient, len_recipients, sent_attachments, success, attachments):

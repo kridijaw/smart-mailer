@@ -1,11 +1,45 @@
 import mimetypes
 import os
+import re
 import sys
 
 from config.logging import logger
 from config.settings import (ALLOWED_MIME_TYPES, IGNORED_EXTENSIONS,
                              MAX_ATTACHMENT_SIZE)
 from scripts.utils import log_and_print
+
+
+def validate_recipients(recipients):
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-ZğüşöçİĞÜŞÖÇ]{2,}$'
+    name_pattern = r'^[a-zA-ZğüşöçİĞÜŞÖÇ\s]{2,}$'
+    email_to_names = {}
+
+    for recipient in recipients:
+        if not validate_pattern(recipient['name'], name_pattern):
+            raise ValueError(f"Invalid name: {recipient['name']}")
+        if not validate_pattern(recipient['email'], email_pattern):
+            raise ValueError(f"Invalid name: {recipient['name']}")
+        if not check_email_name_conflicts(recipient, email_to_names):
+            raise ValueError(f"Found email duplicates under different names: {recipient['email']} - {
+                             email_to_names[recipient['email']]}\nPlease remove duplicates from the CSV file.")
+    return recipients
+
+
+def check_email_name_conflicts(recipient, email_to_names):
+    email = recipient['email']
+
+    if email in email_to_names:
+        if recipient['name'] not in email_to_names[email]:
+            email_to_names[email].append(recipient['name'])
+            return False
+    else:
+        email_to_names[email] = [recipient['name']]
+
+    return True
+
+
+def validate_pattern(value, pattern):
+    return bool(re.match(pattern, value))
 
 
 def validate_attachments(attachments):
