@@ -24,8 +24,6 @@ pip install -r requirements.txt
 3. Create OAuth 2.0 credentials
 4. Download the credentials and save it as `credentials.json` in the project root
 
-If you encounter a JSONDecodeError in get_credentials.py, remove the `token.json` file. Then restart the app and follow the OAuth 2.0 prompts to regenerate the token.
-
 ## File Structure
 
 - `main.py`: Main application entry point
@@ -70,7 +68,7 @@ Solution:
 
 1. Delete the `token.json` file in the main folder
 2. Run the application again
-3. Complete the Google authentication process when prompted
+3. Complete the Google authentication process again when prompted
 
 ## Important Security Notes
 
