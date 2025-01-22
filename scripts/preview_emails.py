@@ -14,8 +14,12 @@ def preview_emails(recipient, template_path, attachments):
         print(f"Reply-To: {reply_to}")
     print("-"*49)
     print(email_content)
-    sent_attachments = add_attachments(
-        MIMEMultipart(), attachments)
-    print(f"\nAttachments: {[os.path.basename(a)
-          for a in sent_attachments]}")
+    if attachments:
+        sent_attachments = []
+        sent_attachments = add_attachments(
+            MIMEMultipart(), attachments)
+        print(f"\nAttachments: {[os.path.basename(a)
+                                 for a in sent_attachments]}")
+    else:
+        print("\n(No attachments included)")
     print("="*49)

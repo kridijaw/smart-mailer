@@ -43,7 +43,7 @@ def main():
                     total_sent += 1
 
                 log_success(index, recipient, len(
-                    recipients), sent_attachments, success)
+                    recipients), sent_attachments, success, attachments)
 
             log_email_summary(total_sent, len(recipients))
 
