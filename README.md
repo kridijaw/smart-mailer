@@ -13,7 +13,7 @@ A secure Python application for sending personalized emails using Gmail API with
 1. Clone the repository
 2. Install dependencies:
 
-```sh
+```bash
 pip install -r requirements.txt
 ```
 
@@ -43,7 +43,7 @@ If you encounter a JSONDecodeError in get_credentials.py, remove the `token.json
 4. Adjust the configuration settings in [`config/settings.py`](config/settings.py) as needed.
 5. Run the application:
 
-```sh
+```bash
 # Send emails
 python main.py
 
@@ -55,6 +55,22 @@ python main.py --dry-run
 ```
 
 On first run, your browser will open for Google authentication.
+
+## Troubleshooting
+
+### Token Expired Error
+
+If you encounter this error:
+
+```bash
+Error in main: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})
+```
+
+Solution:
+
+1. Delete the `token.json` file in the main folder
+2. Run the application again
+3. Complete the Google authentication process when prompted
 
 ## Important Security Notes
 
