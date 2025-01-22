@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime, time
+from datetime import datetime
 
 
 def parse_time(time_str):
