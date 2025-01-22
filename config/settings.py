@@ -1,5 +1,3 @@
-from datetime import time
-
 EMAIL_PREVIEW_ENABLED = True  # Set to False to disable email preview in terminal
 EMAIL_MAX_RETRY_ATTEMPTS = 5  # Number of retry attempts for sending an email
 
