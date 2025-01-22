@@ -30,7 +30,7 @@ def main():
             preview_emails(recipients[0], template_path, attachments)
 
         if not dry_run:
-            process_email(recipients, template_path, attachments, dry_run)
+            process_email(recipients, template_path, attachments, args)
         if dry_run:
             log_email_summary(0, len(recipients), dry_run)
 
