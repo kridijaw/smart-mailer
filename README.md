@@ -37,7 +37,7 @@ pip install -r requirements.txt
 
 1. Prepare your recipients list in [`recipients.csv`](data/recipients.csv).
 2. Create your email template in [`email_template.txt`](data/email_template.txt). The template can be in plain text, HTML, or Markdown format. The Jinja2 expression `{{ name }}` will be replaced with the name of the email recipient defined in recipients.csv when the template is rendered.
-3. Optional: Add attachments to the `attachments` folder.
+3. Optional: Place any attachments in the `attachments` folder. These files will be automatically included in all outgoing emails, sorted in a natural order (e.g., "2.jpg" before "10.pdf").
 4. Adjust the configuration settings in [`config/settings.py`](config/settings.py) as needed.
 5. Run the application:
 
