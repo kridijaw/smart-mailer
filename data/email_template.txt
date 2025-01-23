@@ -1,10 +1,53 @@
 ---
-subject: Your Email Subject Here
-reply-to: Leave this empty if you do not want to use the Reply-To Email Header
+subject: Your Email Subject Here 🌟
+reply-to: john@example.com
 ---
-Hi {{ name }},
+Hello {{ name }},
 
-Your personalized message here.
+...
 
 Best regards,
+
 Your Name
+
+---
+
+Create your email template by editing this file. The template can be in plain text, HTML, or Markdown format. The Jinja2 expression ```name``` will be replaced with the name of the email recipient defined in recipients.csv when the template is rendered.
+
+To generate an HTML preview without dispatching the email run this command: python main.py --dry-run
+
+## Markdown Syntax Showcase
+
+This is a paragraph with **bold text**, *italic text*, and `inline code`.
+
+---
+
+### Unordered List
+- Item 1
+- Item 2
+    - Nested Item 1
+    - Nested Item 2
+
+### Ordered List
+1. First item
+2. Second item1
+    1. Sub-item 1
+    2. Sub-item 2
+
+### Links
+
+[Markdown Examples](https://en.wikipedia.org/wiki/Markdown#Examples)
+
+[Link to Repository](https://github.com/kridijaw/smart-mailer)
+
+### Blockquotes
+
+> Markdown uses email-style
+characters for blockquoting.
+>
+> Multiple paragraphs need to be prepended individually.
+
+### Images
+
+![Markdown Logo](https://markdown-here.com/img/icon128.png)
+
