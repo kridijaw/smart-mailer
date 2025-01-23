@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import re
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
@@ -31,9 +32,10 @@ def add_attachments(message, attachments):
     if not attachments:
         return [], []
 
+    sorted_attachments = sorted(attachments, key=natural_sort_key)
     successful_attachments = []
 
-    for filepath in attachments:
+    for filepath in sorted_attachments:
         if not os.path.exists(filepath):
             continue
 
@@ -70,3 +72,8 @@ def add_attachments(message, attachments):
             successful_attachments.append(filepath)
 
     return successful_attachments
+
+
+def natural_sort_key(s):
+    return [int(text) if text.isdigit() else text.lower()
+            for text in re.split('([0-9]+)', s)]
