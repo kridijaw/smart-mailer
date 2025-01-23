@@ -14,7 +14,7 @@ Your Name
 
 Create your email template by editing this file. The template can be in plain text, HTML, or Markdown format. The Jinja2 expression ```name``` will be replaced with the name of the email recipient defined in recipients.csv when the template is rendered.
 
-To generate an HTML preview without dispatching the email run this command: python main.py --dry-run
+To generate an HTML preview without dispatching the email, run this command: python main.py --dry-run
 
 ## Markdown Syntax Showcase
 
