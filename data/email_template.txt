@@ -8,7 +8,7 @@ Hello {{ name }},
 
 Best regards,
 
-Your Name
+Your Name 💜
 
 ---
 
@@ -16,11 +16,17 @@ Create your email template by editing this file. The template can be in plain te
 
 To generate an HTML preview without dispatching the email, run this command: python main.py --dry-run
 
+---
+
 ## Markdown Syntax Showcase
 
-This is a paragraph with **bold text**, *italic text*, and `inline code`.
+Paragraphs are separated 
+by a blank line.
 
----
+Two spaces at the end of a line  
+produce a line break.
+
+This is a paragraph with **bold text**, *italic text*, and `inline code`.
 
 ### Unordered List
 - Item 1
@@ -34,12 +40,6 @@ This is a paragraph with **bold text**, *italic text*, and `inline code`.
     1. Sub-item 1
     2. Sub-item 2
 
-### Links
-
-[Markdown Examples](https://en.wikipedia.org/wiki/Markdown#Examples)
-
-[Link to Repository](https://github.com/kridijaw/smart-mailer)
-
 ### Blockquotes
 
 > Markdown uses email-style
@@ -47,7 +47,14 @@ characters for blockquoting.
 >
 > Multiple paragraphs need to be prepended individually.
 
-### Images
+### Links
+[Markdown Examples](https://en.wikipedia.org/wiki/Markdown#Examples)
 
+[Video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
+[Back to Repository](https://github.com/kridijaw/smart-mailer)
+
+[Markdown Logo](https://markdown-here.com/img/icon128.png)
+
+#### Embedded Image
 ![Markdown Logo](https://markdown-here.com/img/icon128.png)
-
