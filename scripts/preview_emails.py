@@ -70,42 +70,55 @@ def add_html_boilerplate(subject, html_content, reply_to, sent_attachments, reci
 
 
 def add_html_attachment(attachments):
-    file_path = "../attachments/"
-    IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')
-    VIDEO_EXTENSIONS = ('.mp4', '.webm', '.ogg', '.mov', '.avi')
-    AUDIO_EXTENSIONS = ('.mp3', '.wav', '.ogg', '.m4a', 'flac')
-    TEXT_EXTENSIONS = ('.txt', '.md', '.csv', '.json')
-    PDF_EXTENSIONS = ('.pdf',)
+    FILE_TYPES = {
+        'pdf': {
+            'extensions': ('.pdf',),
+            'template': lambda f, n: f'<a href="{f}" target="_blank">{n}</a>'
+        },
+        'image': {
+            'extensions': ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'),
+            'template': lambda f, n: f'<img src="{f}" alt="{n}">'
+        },
+        'video': {
+            'extensions': ('.mp4', '.webm', '.ogg', '.mov', '.avi'),
+            'template': lambda f, n: f'''<video controls>
+                <source src="{f}" type="video/{n.split('.')[-1]}">
+                Your browser does not support the video tag.
+            </video>'''
+        },
+        'audio': {
+            'extensions': ('.mp3', '.wav', '.ogg', '.m4a', 'flac'),
+            'template': lambda f, n: f'''<audio controls>
+                <source src="{f}" type="audio/{n.split('.')[-1]}">
+                Your browser does not support the audio element.
+            </audio>'''
+        },
+        'text': {
+            'extensions': ('.txt', '.md', '.csv', '.json'),
+            'template': lambda f, n: f'<a href="{f}" target="_blank">{n} (Text File)</a>'
+        }
+    }
 
-    attachments_html = "<hr>"
-    attachments_html += "<h3>Attachments</h3>"
+    def get_file_type(filename):
+        filename_lower = filename.lower()
+        for file_type, info in FILE_TYPES.items():
+            if filename_lower.endswith(info['extensions']):
+                return file_type
+        return 'default'
+
+    attachments_html = "<hr>\n<h3>Attachments</h3>"
+
     for attachment in attachments:
-        attachment = attachment.replace("attachments/", "")
+        clean_name = attachment.replace("attachments/", "")
+        file_path = f"../attachments/{clean_name}"
 
-        if attachment.lower().endswith(PDF_EXTENSIONS):
-            attachments_html += f'<a href="{
-                file_path}{attachment}" target="_blank">{attachment}</a>'
-        elif attachment.lower().endswith(IMAGE_EXTENSIONS):
-            attachments_html += f'<a href="{file_path}{
-                attachment}" target="_blank">{attachment}</a>'
-        elif attachment.lower().endswith(VIDEO_EXTENSIONS):
-            attachments_html += f'''
-                <video controls>
-                    <source src="{file_path}{attachment}" type="video/{attachment.split('.')[-1]}">
-                    Your browser does not support the video tag.
-                </video>'''
-        elif attachment.lower().endswith(AUDIO_EXTENSIONS):
-            attachments_html += f'''
-                <audio controls>
-                    <source src="{file_path}{attachment}" type="audio/{attachment.split('.')[-1]}">
-                    Your browser does not support the audio element.
-                </audio>'''
-        elif attachment.lower().endswith(TEXT_EXTENSIONS):
-            attachments_html += f'<a href="{
-                file_path}{attachment}" target="_blank">{attachment} (Text File)</a>'
+        file_type = get_file_type(clean_name)
+        if file_type in FILE_TYPES:
+            template = FILE_TYPES[file_type]['template']
+            attachments_html += f"\n{template(file_path, clean_name)}"
         else:
-            attachments_html += f'<a href="{
-                file_path}{attachment}" download>{attachment} (Download)</a>'
+            attachments_html += f'\n<a href="{
+                file_path}" download>{clean_name} (Download)</a>'
 
         attachments_html += '<br>'
 
